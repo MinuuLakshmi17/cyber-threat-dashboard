@@ -1,8 +1,52 @@
 # Sentinel — Cyber Threat Dashboard
 
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue?logo=python&logoColor=white)](backend/)
+[![React 18](https://img.shields.io/badge/react-18-61DAFB?logo=react&logoColor=black)](frontend/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)](backend/)
+[![MongoDB 7.0](https://img.shields.io/badge/MongoDB-7.0-47A248?logo=mongodb&logoColor=white)](compose.yaml)
+[![Docker Compose](https://img.shields.io/badge/docker--compose-2496ED?logo=docker&logoColor=white)](compose.yaml)
+[![Tests](https://img.shields.io/badge/tests-10%20passing-brightgreen)](VERIFICATION.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 <p align="justify">Sentinel is a full-stack security operations dashboard for alert triage and threat analytics, built with <strong>React + Vite</strong>, <strong>FastAPI</strong>, <strong>MongoDB</strong>, and <strong>Docker Compose</strong>. It models the core workflow of a SOC: detectors emit normalized alerts, analysts triage them through a defined state machine, and the platform surfaces the KPIs and trends a shift lead needs at a glance.</p>
 
-<p align="justify">The project is deliberately architected as three independently deployable services behind one Compose file. The API owns validation, persistence, and analytics; the frontend is a static bundle that speaks to the API through a same-origin reverse proxy; MongoDB owns durable state with indexes matched to the query patterns. Every layer is covered by automated tests, and a <a href="VERIFICATION.md">verification report</a> documents exactly what has been proven and what has not.</p>
+<p align="justify">Three independently deployable services behind one Compose file. The API owns validation, persistence, and analytics; the frontend is a static bundle speaking to the API through a same-origin reverse proxy; MongoDB owns durable state with indexes matched to the query patterns. Every layer is covered by automated tests, and <a href="VERIFICATION.md">VERIFICATION.md</a> documents exactly what has been proven and what has not.</p>
+
+## Contents
+
+- [The 2-minute tour](#the-2-minute-tour)
+- [Features](#features)
+- [Architecture](#architecture)
+- [How a SOC uses this](#how-a-soc-uses-this)
+- [Design decisions](#design-decisions)
+- [Run with Docker Compose](#run-with-docker-compose)
+- [Run the tests](#run-the-tests)
+- [API overview](#api-overview)
+- [Configuration](#configuration)
+- [Verification](#verification)
+- [Security and production-readiness notes](#security-and-production-readiness-notes)
+- [Roadmap](#roadmap)
+- [Project structure](#project-structure)
+- [License](#license)
+
+## The 2-minute tour
+
+Start the stack and open the dashboard:
+
+```bash
+docker compose up --build -d
+# Dashboard: http://localhost:8080
+```
+
+Six synthetic alerts are seeded on first launch. Try the analyst loop:
+
+1. **Read the KPIs.** The header shows 6 total alerts, 2 unresolved criticals, 6 open investigations.
+2. **Filter to what matters.** Set the severity filter to `critical` — the queue narrows to *Suspicious PowerShell execution* and *Malware hash match*.
+3. **Work an alert.** Click *Suspicious PowerShell execution*, review source IP, host, and detector in the detail modal, then hit **Investigate alert**. The toast confirms, the row flips to `investigating`, and the open-investigations KPI moves.
+4. **Check the analytics.** The 7-day trend chart and the type-distribution donut reflect the same data the queue shows — one backend, one source of truth.
+5. **Export.** Hit **Export report** to download the filtered queue as CSV.
+
+That loop — filter, investigate, verify, export — is the entire Tier-1 analyst workflow, and every step is backed by a tested API call.
 
 ## Features
 
@@ -31,7 +75,7 @@ Browser ── HTTP :8080 ──> Nginx (React static bundle, /api reverse proxy
                                        └── Summary, trends, type analytics
 ```
 
-<p align="justify">The frontend never talks to MongoDB and never needs to know the API's host: in production it calls the same origin under <code>/api</code>, which Nginx proxies to the backend service. In development, the Vite dev server provides the identical proxy. This keeps one networking model across environments and eliminates an entire class of CORS misconfiguration.</p>
+<p align="justify">The frontend never talks to MongoDB and never needs to know the API's host: in production it calls the same origin under <code>/api</code>, which Nginx proxies to the backend service. In development, the Vite dev server provides the identical proxy. One networking model across environments, and an entire class of CORS misconfiguration eliminated.</p>
 
 ## How a SOC uses this
 
