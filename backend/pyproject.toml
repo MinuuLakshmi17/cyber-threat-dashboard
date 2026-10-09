@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sentinel-soc-api"
+version = "1.0.0"
+requires-python = ">=3.11"
+dependencies = ["fastapi==0.115.12", "uvicorn[standard]==0.34.0", "pymongo==4.11.3"]
+
+[project.optional-dependencies]
+test = ["pytest==8.3.5", "httpx==0.28.1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
