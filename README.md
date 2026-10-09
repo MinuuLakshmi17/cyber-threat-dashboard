@@ -5,7 +5,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)](backend/)
 [![MongoDB 7.0](https://img.shields.io/badge/MongoDB-7.0-47A248?logo=mongodb&logoColor=white)](compose.yaml)
 [![Docker Compose](https://img.shields.io/badge/docker--compose-2496ED?logo=docker&logoColor=white)](compose.yaml)
-[![Tests](https://img.shields.io/badge/tests-10%20passing-brightgreen)](VERIFICATION.md)
+[![Tests](https://img.shields.io/badge/tests-20%20passing-brightgreen)](VERIFICATION.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 <p align="justify">Sentinel is a full-stack security operations dashboard for alert triage and threat analytics, built with <strong>React + Vite</strong>, <strong>FastAPI</strong>, <strong>MongoDB</strong>, and <strong>Docker Compose</strong>. It models the core workflow of a SOC: detectors emit normalized alerts, analysts triage them through a defined state machine, and the platform surfaces the KPIs and trends a shift lead needs at a glance.</p>
@@ -62,7 +62,7 @@ That loop — filter, investigate, verify, export — is the entire Tier-1 analy
 - Nginx reverse proxy serving the SPA with `/api` routed to the backend (no CORS in production).
 - Backend API tests and frontend API-client tests, all passing.
 
-> **Integration note:** This repository ships a generic alert ingestion API and synthetic demo events. It does not claim to integrate with analyzers that have not been supplied. Connect existing detectors by POSTing normalized events to `POST /api/v1/alerts` or by adding a dedicated adapter.
+> **Integration note:** This repository ships a generic alert ingestion API and synthetic demo events, plus a working ingestion adapter for [llm-security-log-analyzer](https://github.com/MinuuLakshmi17/llm-security-log-analyzer) in `adapters/`. Point the adapter at a running analyzer and its open findings flow into Sentinel as triageable alerts — see `adapters/README.md`.
 
 ## Architecture
 
@@ -144,6 +144,12 @@ npm test
 npm run build
 ```
 
+Adapter mapping tests (stdlib only — any Python 3.10+ works):
+
+```bash
+python -m pytest adapters/tests/ -q
+```
+
 For local backend development without MongoDB, set `STORAGE_MODE=memory` before starting Uvicorn. For the complete UI, use Docker Compose; for the Vite dev server, start the API on port 8000 and run `npm run dev` in `frontend/`.
 
 ## API overview
@@ -196,11 +202,12 @@ This is a portfolio/demo project, not a production SOC deployment out of the box
 
 ## Roadmap
 
-- Ingestion adapters for the existing analyzer projects (normalized event mapping).
-- Authentication with analyst/admin roles and an audit trail for triage actions.
-- Push delivery via Server-Sent Events or WebSockets instead of polling.
-- Browser end-to-end tests and a validated `docker compose` run.
-- Public deployment with managed database, secrets, TLS, and health monitoring.
+- [x] Ingestion adapter for llm-security-log-analyzer (normalized event mapping, idempotent forwarding).
+- [ ] Ingestion adapters for additional detectors (intelligent-network-threat-detection).
+- [ ] Authentication with analyst/admin roles and an audit trail for triage actions.
+- [ ] Push delivery via Server-Sent Events or WebSockets instead of polling.
+- [ ] Browser end-to-end tests and a validated `docker compose` run.
+- [ ] Public deployment with managed database, secrets, TLS, and health monitoring.
 
 ## Project structure
 
@@ -216,6 +223,10 @@ frontend/
   src/styles.css     Responsive dashboard UI
   Dockerfile         Multi-stage Vite build + Nginx
   nginx.conf         SPA fallback and /api reverse proxy
+adapters/
+  forward_analyzer_alerts.py  Analyzer -> Sentinel forwarder (stdlib only)
+  tests/test_forward.py       Mapping unit tests
+  README.md                   Field mapping and usage
 compose.yaml         MongoDB, API, frontend orchestration
 VERIFICATION.md      Honest verification report
 ```

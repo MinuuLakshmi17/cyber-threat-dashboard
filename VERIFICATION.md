@@ -9,6 +9,7 @@ Verification performed while assembling this artifact:
 - Frontend automated tests: **5 passed** (`npm test` / vitest: API client query-string construction, error detail propagation, PATCH/POST request shape). Fixed a latent config defect where `src/test-setup.js` assumed vitest globals that were not enabled (`globals: true` added to `vite.config.js`).
 - Frontend/backend API contract checked by hand: query parameter names, the `status` alias, PATCH/POST bodies, and the nginx `/api/` reverse proxy prefix all agree with the FastAPI routes.
 - Live API end-to-end (2026-10-09): backend run with in-memory storage and demo seed, exercised over HTTP — alert listing, triage PATCH (status + assignee persisted), status filter, alert creation (201), and analytics summary consistency all behaved correctly.
+- Ingestion adapter (2026-10-09): `adapters/forward_analyzer_alerts.py` verified live against a stub analyzer (realistic AlertOut payloads) and a running Sentinel backend — 2 open findings forwarded with correct field mapping (severity, detector, evidence-derived IP/host, LLM summary in description), acknowledged findings excluded, rerun forwarded 0 (dedup via state file). 10 mapping unit tests pass.
 - `compose.yaml` validated structurally: service wiring, healthcheck-gated `depends_on` ordering, and environment variables are consistent.
 
 Checks not performed in this environment:
